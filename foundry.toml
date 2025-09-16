@@ -1,0 +1,37 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+via_ir = true
+ast = true
+ffi = true
+build_info = true
+extra_output = ["storageLayout"]
+
+optimizer = true
+optimizer_runs = 1200
+
+# File system permissions (required for vm.readFile / vm.writeFile)
+fs_permissions = [
+    { access = "read", path = "./out/" },
+    { access = "read", path = "./script/input/" },
+    { access = "read-write", path = "./script/output/" },
+    { access = "write", path = "./reports" },
+]
+
+# Fork testing configuration
+[rpc_endpoints]
+bsc = "https://icy-sly-rain.bsc.quiknode.pro/144c3b82f11e9ba4b2d3bf02aaab284b25528c42/"
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[lint]
+exclude_lints = [
+    "asm-keccak256",
+    "erc20-unchecked-transfer",
+    "mixed-case-function",
+    "unaliased-plain-import",
+    "mixed-case-variable",
+    "unused-import",
+    "screaming-snake-case-const",
+]
+exclude_paths = ["test/"]

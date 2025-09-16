@@ -1,0 +1,49 @@
+{
+  "transactions": [
+    {
+      "hash": "0xb3614ff67568f7abc0102fd5d956407b23bd01ea63f7ca5ad5ffb5db0ba2792e",
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+      "function": "forceSetWithdrawCount(uint256)",
+      "arguments": [
+        "13"
+      ],
+      "transaction": {
+        "from": "0xbe1e2c05a20df20a3ecd0ec12617b296a58ee2a1",
+        "to": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+        "gas": "0xa4a0",
+        "value": "0x0",
+        "input": "0x33ff86a9000000000000000000000000000000000000000000000000000000000000000d",
+        "nonce": "0x2f1",
+        "chainId": "0x61"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [
+    {
+      "status": "0x1",
+      "cumulativeGasUsed": "0x2db78",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "type": "0x0",
+      "transactionHash": "0xb3614ff67568f7abc0102fd5d956407b23bd01ea63f7ca5ad5ffb5db0ba2792e",
+      "transactionIndex": "0x1",
+      "blockHash": "0x324e1829e071ab8f81ec36ab22cf98ce5ad9feae574349b9f921d6921b23f593",
+      "blockNumber": "0x3b7235c",
+      "gasUsed": "0x7091",
+      "effectiveGasPrice": "0x3b9aca00",
+      "from": "0xbe1e2c05a20df20a3ecd0ec12617b296a58ee2a1",
+      "to": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+      "contractAddress": null
+    }
+  ],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1755589867,
+  "chain": 97,
+  "commit": "fd06cee"
+}

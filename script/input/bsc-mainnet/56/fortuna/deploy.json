@@ -1,0 +1,57 @@
+{
+  "network": {
+    "chainId": 56,
+    "name": "BSC Mainnet",
+    "rpcUrl": "https://virulent-thrumming-hexagon.bsc.quiknode.pro/caefd126bca27e54cda798bd992d60ec4871cfd4/"
+  },
+  "pancakeswap": {
+    "router": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+    "factory": "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
+  },
+  "contracts": {
+    "existingUsdt": "0x55d398326f99059fF775485246999027B3197955"
+  },
+  "tokens": {
+    "agt": {
+      "initialSupply": "2000000000000",
+      "nodeCardTaxWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a"
+    },
+    "fusd": {
+      "initialSupply": "200000000",
+      "teamWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a",
+      "nodeCardTaxWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a"
+    }
+  },
+  "addresses": {
+    "oracle": "0xd656c081c15B793b33f89A2755693b49BaC2B505",
+    "vault": "0xfB290B4903bad26fe1C2Fb89cf6402529aA61e0c",
+    "team": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a",
+    "distributeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999",
+    "operateAddress": "0x48156499e1f1502B6806B5B5Babbc027B475EBcc",
+    "feeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999"
+  },
+  "treasury": {
+    "basePrice": "0.05",
+    "upPrice": "0.2",
+    "downPrice": "0.025"
+  },
+  "fortuna": {
+    "feePercent": 100,
+    "claimFeePercent": 5000,
+    "minDeposit": "100000000000000000",
+    "bnbFee": "20000000000000"
+  },
+  "liquidity": {
+    "fusdUsdt": {
+      "fusdAmount": "40000000",
+      "usdtAmount": "2000000"
+    },
+    "fusdAgt": {
+      "fusdAmount": "40000000",
+      "agtAmount": "1000000000000"
+    }
+  },
+  "fees": {
+    "usdtBuyFee": 1000
+  }
+}

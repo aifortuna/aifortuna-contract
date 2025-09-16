@@ -1,0 +1,49 @@
+{
+  "transactions": [
+    {
+      "hash": "0xd686f2d3cd74866718e7f9c23c95d1632e9d8a648dd2cce54870f0706eab624a",
+      "transactionType": "CALL",
+      "contractName": null,
+      "contractAddress": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+      "function": "forceSetWithdrawCount(uint256)",
+      "arguments": [
+        "6"
+      ],
+      "transaction": {
+        "from": "0xbe1e2c05a20df20a3ecd0ec12617b296a58ee2a1",
+        "to": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+        "gas": "0x94a1",
+        "value": "0x0",
+        "input": "0x33ff86a90000000000000000000000000000000000000000000000000000000000000006",
+        "nonce": "0x2e9",
+        "chainId": "0x61"
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [
+    {
+      "status": "0x1",
+      "cumulativeGasUsed": "0x23916",
+      "logs": [],
+      "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "type": "0x0",
+      "transactionHash": "0xd686f2d3cd74866718e7f9c23c95d1632e9d8a648dd2cce54870f0706eab624a",
+      "transactionIndex": "0x2",
+      "blockHash": "0x2ab69b53e7d359ed4255a7f428fee3c4eedcb04e1d540871682ead4616d49f7d",
+      "blockNumber": "0x3b60b9b",
+      "gasUsed": "0x65a1",
+      "effectiveGasPrice": "0x3b9aca00",
+      "from": "0xbe1e2c05a20df20a3ecd0ec12617b296a58ee2a1",
+      "to": "0x39c5d3e3b8f5594623636ecdbdf135838b47b558",
+      "contractAddress": null
+    }
+  ],
+  "libraries": [],
+  "pending": [],
+  "returns": {},
+  "timestamp": 1755536081,
+  "chain": 97,
+  "commit": "fd06cee"
+}

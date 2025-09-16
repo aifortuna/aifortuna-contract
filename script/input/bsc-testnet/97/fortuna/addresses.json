@@ -1,0 +1,18 @@
+{
+  "deployedContracts": {
+    "usdt": "0xaE49bFCe31392A55eF3332B9a07d0534122327CA",
+    "agt": "",
+    "fusd": "",
+    "nodeCard": "",
+    "treasury": "",
+    "fortuna": ""
+  },
+  "operators": {
+    "oracle": "0xd656c081c15B793b33f89A2755693b49BaC2B505",
+    "vault": "0xfB290B4903bad26fe1C2Fb89cf6402529aA61e0c",
+    "team": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a",
+    "distributeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999",
+    "operateAddress": "0x48156499e1f1502B6806B5B5Babbc027B475EBcc",
+    "feeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999"
+  }
+}

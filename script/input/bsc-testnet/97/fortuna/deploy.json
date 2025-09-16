@@ -1,0 +1,57 @@
+{
+  "network": {
+    "chainId": 97,
+    "name": "BSC Testnet",
+    "rpcUrl": "https://floral-blue-night.bsc-testnet.quiknode.pro/01f4e7255b7ffcfebb5050655ef8bf4064d2aef1/"
+  },
+  "pancakeswap": {
+    "router": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1",
+    "factory": "0x6725F303b657a9451d8BA641348b6761A6CC7a17"
+  },
+  "contracts": {
+    "existingUsdt": "0xaE49bFCe31392A55eF3332B9a07d0534122327CA"
+  },
+  "tokens": {
+    "agt": {
+      "initialSupply": "2000000000000",
+      "nodeCardTaxWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a"
+    },
+    "fusd": {
+      "initialSupply": "200000000",
+      "teamWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a",
+      "nodeCardTaxWallet": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a"
+    }
+  },
+  "addresses": {
+    "oracle": "0xd656c081c15B793b33f89A2755693b49BaC2B505",
+    "vault": "0xfB290B4903bad26fe1C2Fb89cf6402529aA61e0c",
+    "team": "0xB16Fa1c0F43591cF4033b33856F8d2DCFBA6510a",
+    "distributeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999",
+    "operateAddress": "0x48156499e1f1502B6806B5B5Babbc027B475EBcc",
+    "feeAddress": "0xBFDe259460b3918FBE371F36430185Bb6F3B9999"
+  },
+  "treasury": {
+    "basePrice": "0.05",
+    "upPrice": "0.2",
+    "downPrice": "0.025"
+  },
+  "fortuna": {
+    "feePercent": 100,
+    "claimFeePercent": 5000,
+    "minDeposit": "100000000000000000",
+    "bnbFee": "20000000000000"
+  },
+  "liquidity": {
+    "fusdUsdt": {
+      "fusdAmount": "40000000",
+      "usdtAmount": "2000000"
+    },
+    "fusdAgt": {
+      "fusdAmount": "40000000",
+      "agtAmount": "1000000000000"
+    }
+  },
+  "fees": {
+    "usdtBuyFee": 1000
+  }
+}
