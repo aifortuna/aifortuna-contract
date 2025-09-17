@@ -218,7 +218,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
             alphaBps = 5000 + (5000 * s) / 1e18;
         } else if (p.isUpZone && !p.isBuy) {
             // 0.5 -> 1
-            alphaBps = 5000 + (5000 * s) / 1e18;
+            alphaBps = 5000 - (5000 * s) / 1e18;
         } else if (!p.isUpZone && p.isBuy) {
             // down zone buy: 0.5 -> 0.9
             alphaBps = 5000 - (4000 * s) / 1e18;

@@ -89,9 +89,8 @@ contract NodeCard is Ownable2StepUpgradeable {
         require(msg.value >= bnb_fee, "Insufficient BNB fee");
         require(!usedPurchaseContexts[purchaseContext], "Purchase context already used");
 
-        bytes32 message = keccak256(
-            abi.encodePacked(block.chainid, msg.sender, tokenAddrList, tokenAmountList, purchaseContext, deadline)
-        );
+        bytes32 message =
+            keccak256(abi.encodePacked(msg.sender, tokenAddrList, tokenAmountList, purchaseContext, deadline));
         require(signature.length == 65, "bad sig length");
         bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(message);
         address recovered = ECDSA.recover(ethSignedMessageHash, signature);
