@@ -209,22 +209,22 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
         }
         uint256 s = t.smootherGamma(gamma); // 1e18
         // Four curves mapping:
-        // Up zone: userBuy -> 50%->100%; userSell -> 50%->100%
-        // Down zone: userBuy -> 50%->10%; userSell -> 50%->90%
+        // Up zone: userBuy -> 50%->100%; userSell -> 50%->10%
+        // Down zone: userBuy -> 50%->10%; userSell -> 50%->100%
         // Interpolate: alpha = 0.5 +/- 0.4 * s
         // Return in basis points (x 100%)
         if (p.isUpZone && p.isBuy) {
             // 0.5 -> 1
             alphaBps = 5000 + (5000 * s) / 1e18;
         } else if (p.isUpZone && !p.isBuy) {
-            // 0.5 -> 1
-            alphaBps = 5000 - (5000 * s) / 1e18;
+            // up zone sell: 0.5 -> 0.1
+            alphaBps = 5000 - (4000 * s) / 1e18;
         } else if (!p.isUpZone && p.isBuy) {
             // down zone buy: 0.5 -> 0.9
             alphaBps = 5000 - (4000 * s) / 1e18;
         } else {
-            // down zone sell: 0.5 -> 0.9
-            alphaBps = 5000 + (4000 * s) / 1e18;
+            // down zone sell: 0.5 -> 1
+            alphaBps = 5000 + (5000 * s) / 1e18;
         }
     }
 
