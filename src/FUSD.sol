@@ -31,6 +31,9 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
+    bool public isOpenSellWhitelist = false;
+    bool public isOpenBuyWhitelist = false;
+
     // Whitelist mapping
     mapping(address => bool) public whitelist;
 
@@ -65,6 +68,8 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
     event FeeWalletUpdated(address indexed oldWallet, address indexed newWallet);
     event GameContractUpdated(address indexed oldContract, address indexed newContract);
 
+    event WhiteListStatusUpdated(bool buy, bool sell);
+
     /**
      * @dev Constructor
      * @param _team Team wallet address
@@ -86,6 +91,8 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         team = _team;
         gameContract = _gameContract;
         gameFeeBps = 9000;
+        isOpenBuyWhitelist = true;
+        isOpenSellWhitelist = false;
 
         emit FUSDInitialized(msg.sender, _team, mintAmount, block.timestamp);
         emit TokensMinted(msg.sender, mintAmount, msg.sender, block.timestamp);
@@ -126,6 +133,15 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         require(account != address(0), "zero addr");
         operators[account] = status;
         emit OperatorUpdated(account, status);
+    }
+
+    /**
+     * @dev Set or unset a operators  address
+     */
+    function setWhitelist(bool buy, bool sell) public onlyOwner {
+        isOpenBuyWhitelist = buy;
+        isOpenSellWhitelist = sell;
+        emit WhiteListStatusUpdated(buy, sell);
     }
 
     /**
@@ -182,13 +198,17 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
             } else if (from == agtSwapPair) {
                 // Sell AGT
             } else {
-                // IF sell FUSD to pair, we charge fee
+                if (isOpenBuyWhitelist) {
+                    require(whitelist[to], "Not whitelisted");
+                }
+
+                if (isOpenSellWhitelist) {
+                    require(whitelist[from], "Not whitelisted");
+                }
+
                 if (swapPairs[to]) {
                     feeAmount = (amount * feeBps) / FEE_DENOMINATOR;
                     transferAmount = amount - feeAmount;
-                } else {
-                    // If buy FUSD from pair, only allow whitelisted address
-                    require(whitelist[to], "Not whitelisted");
                 }
             }
         }
