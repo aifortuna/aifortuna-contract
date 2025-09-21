@@ -4,19 +4,16 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/// @title AGT Token (Utility)
-/// @notice Large supply utility/burn/fee token. Initial supply minted to owner; burn & fee logic can be added later.
 contract AGT is ERC20, Ownable, ReentrancyGuard {
     mapping(address => bool) public feeExempt;
-    mapping(address => bool) public swapPairs; // addresses treated as AMM pairs / routers triggering fee
+    mapping(address => bool) public swapPairs;
     mapping(address => bool) public whitelist;
 
-    address public feeWallet; // receives trade fees
-    address public gameContract; // receives CardFee fees
-    uint256 public feeBps = 1000; // 10% default (basis points)
-    uint256 public constant BPS = 10000; // 100% in basis points
+    address public feeWallet;
+    address public gameContract;
+    uint256 public feeBps = 1000;
+    uint256 public constant BPS = 10000;
     uint256 public gameFeeBps;
 
     event FeeReceived(address indexed from, address indexed feeWallet, uint256 amount);
@@ -38,33 +35,52 @@ contract AGT is ERC20, Ownable, ReentrancyGuard {
         _mint(msg.sender, mintAmount);
         feeExempt[msg.sender] = true;
         feeWallet = _feeWallet;
+        feeExempt[_feeWallet] = true;
 
         gameFeeBps = 9000;
 
         emit AGTInitialized(msg.sender, mintAmount, block.timestamp);
         emit FeeWalletUpdated(address(0), _feeWallet);
+        emit FeeExemptUpdated(msg.sender, true);
+        emit FeeExemptUpdated(_feeWallet, true);
     }
 
     function _calculateFees(uint256 totalFee) internal view returns (uint256 gameFee, uint256 teamFee) {
-        gameFee = (totalFee * gameFeeBps) / BPS;
-        teamFee = totalFee - gameFee;
+        if (gameContract == address(0)) {
+            gameFee = 0;
+            teamFee = 0;
+        } else {
+            gameFee = (totalFee * gameFeeBps) / BPS;
+            teamFee = totalFee - gameFee;
+        }
     }
 
     function setFeeExempt(address a, bool s) external onlyOwner {
+        require(feeExempt[a] != s, "Value unchanged");
         feeExempt[a] = s;
         emit FeeExemptUpdated(a, s);
     }
 
     function setSwapPair(address pair, bool status) external onlyOwner {
+        require(swapPairs[pair] != status, "Value unchanged");
         swapPairs[pair] = status;
         emit SwapPairUpdated(pair, status);
     }
 
     function setFeeWallet(address wallet) external onlyOwner {
         require(wallet != address(0), "op zero");
-        emit FeeWalletUpdated(feeWallet, wallet);
+        require(feeWallet != wallet, "Value unchanged");
+
+        address oldWallet = feeWallet;
         feeWallet = wallet;
-        feeExempt[wallet] = true; // auto exempt fee wallet
+        emit FeeWalletUpdated(oldWallet, wallet);
+
+        if (oldWallet != address(0) && feeExempt[oldWallet]) {
+            feeExempt[oldWallet] = false;
+            emit FeeExemptUpdated(oldWallet, false);
+        }
+
+        feeExempt[wallet] = true;
         emit FeeExemptUpdated(wallet, true);
     }
 
@@ -81,18 +97,19 @@ contract AGT is ERC20, Ownable, ReentrancyGuard {
     }
 
     function setGameContract(address _gameContract) external onlyOwner {
+        require(_gameContract != address(0), "zero addr");
+        require(gameContract != _gameContract, "Value unchanged");
+
         address old_cnt = gameContract;
         gameContract = _gameContract;
 
         emit GameContractUpdate(_gameContract, old_cnt);
     }
 
-    /**
-     * @dev Add address to whitelist
-     * @param account Address to add to whitelist
-     */
     function addToWhitelist(address account, bool status) external onlyOwner {
         require(account != address(0), "Cannot whitelist zero address");
+        require(whitelist[account] != status, "Value unchanged");
+
         whitelist[account] = status;
         emit WhitelistUpdated(account, status);
     }
@@ -111,13 +128,13 @@ contract AGT is ERC20, Ownable, ReentrancyGuard {
         require(from != address(0) && to != address(0), "zero addr");
         uint256 fee = 0;
 
-        if (is_sell(from, to)) {
+        if (is_sell(to) && !isFeeExempt(from, to)) {
             // Selling AGT to pair (AGT -> FUSD), allow anyone, charge AGT fee
             if (feeBps > 0) {
                 fee = (amount * feeBps) / BPS;
             }
-        } else if (is_buy(from, to)) {
-            // Buying AGT from pair (FUSD -> AGT), check whitelist and charge fee
+        } else if (is_buy(from) && !isFeeExempt(from, to)) {
+            // Buying AGT from pair (FUSD -> AGT) Only Check whitelist, no fee
             require(whitelist[to], "not whitelisted");
         }
 
@@ -138,12 +155,16 @@ contract AGT is ERC20, Ownable, ReentrancyGuard {
         return true;
     }
 
-    function is_sell(address from, address to) public view returns (bool) {
-        return swapPairs[to] && !feeExempt[from] && !feeExempt[to];
+    function is_sell(address to) public view returns (bool) {
+        return swapPairs[to];
     }
 
-    function is_buy(address from, address to) public view returns (bool) {
-        return swapPairs[from] && !feeExempt[from] && !feeExempt[to];
+    function is_buy(address from) public view returns (bool) {
+        return swapPairs[from];
+    }
+
+    function isFeeExempt(address from, address to) public view returns (bool) {
+        return feeExempt[from] || feeExempt[to];
     }
 
     function burn(uint256 amount) external nonReentrant {

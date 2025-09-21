@@ -447,6 +447,8 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
     }
 
     function addPancakeSwapInfos(address token, address pairedToken) external onlyOwner {
+        require(!pancakeSwapInfos[token].isSupported, "Token already exists");
+
         pancakeSwapInfos[token] =
             PancakeSwapInfo({isSupported: true, pairedToken: pairedToken, buyFeePercent: 0, buySupported: false});
 

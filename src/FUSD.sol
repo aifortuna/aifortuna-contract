@@ -6,43 +6,28 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/**
- * @title FUSD Token
- * @dev ERC20 token with whitelist functionality, Uniswap V2 only trading, and 10% fee to team wallet
- */
 contract FUSD is ERC20, Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    // Team wallet that receives fees
     address public team;
-
-    // NodeCard wallet that receives fees
     address public gameContract;
 
-    // addresses treated as AMM pairs / routers triggering fee
     mapping(address => bool) public swapPairs;
 
     address public agtSwapPair;
 
-    // Fee percentage (10% = 1000 basis points)
     uint256 public gameFeeBps = 9000;
-    uint256 public feeBps = 1000; // 10% default (basis points)
-    uint256 public agt_pair_feeBps = 1000; // 3% default (basis points)
+    uint256 public feeBps = 1000;
+    uint256 public agt_pair_feeBps = 1000;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
 
     bool public isOpenSellWhitelist = false;
     bool public isOpenBuyWhitelist = false;
 
-    // Whitelist mapping
     mapping(address => bool) public whitelist;
-
-    // Mapping to track if an address is exempt from fees
     mapping(address => bool) public feeExempt;
-
-    // Minter role mapping
     mapping(address => bool) public minters;
-
     mapping(address => bool) public operators;
 
     // Events
@@ -84,7 +69,6 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         feeExempt[msg.sender] = true;
         feeExempt[_team] = true;
 
-        // Mint initial supply to owner
         uint256 mintAmount = _initialSupply * 10 ** decimals();
         _mint(msg.sender, mintAmount);
         setOperator(msg.sender, true);
@@ -196,7 +180,7 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
                 feeAmount = (amount * agt_pair_feeBps) / FEE_DENOMINATOR;
                 transferAmount = amount - feeAmount;
             } else if (from == agtSwapPair) {
-                // Sell AGT
+                // Sell AGT: we chearge fee on AGT side, keep this empty
             } else {
                 if (isOpenBuyWhitelist) {
                     require(whitelist[to], "Not whitelisted");
@@ -217,7 +201,7 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         _transfer(from, to, transferAmount);
 
         if (feeAmount > 0) {
-            //Sell FUSD for age, so trasnfer FUSD to agtSwapPair
+            //Sell FUSD for AGT, so trasnfer FUSD to agtSwapPair
             if (to == agtSwapPair) {
                 (uint256 gameFee, uint256 teamFee) = _calculateFees(feeAmount);
 
@@ -225,7 +209,7 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
                 emit FeeReceived(from, team, teamFee);
 
                 _transfer(from, gameContract, gameFee);
-                emit NodeCardFeeReceived(to, gameContract, gameFee);
+                emit NodeCardFeeReceived(from, gameContract, gameFee);
             } else {
                 _transfer(from, team, feeAmount);
                 emit FeeReceived(from, team, feeAmount);
@@ -296,7 +280,11 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         // Update whitelist and fee exempt status
         whitelist[_team] = true;
         feeExempt[_team] = true;
+        whitelist[oldTeam] = false;
+        feeExempt[oldTeam] = false;
 
+        emit WhitelistUpdated(oldTeam, false);
+        emit FeeExemptUpdated(oldTeam, false);
         emit TeamUpdated(oldTeam, _team);
         emit WhitelistUpdated(_team, true);
         emit FeeExemptUpdated(_team, true);
@@ -357,16 +345,6 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
         address recipient = owner();
         IERC20(token).safeTransfer(recipient, amount);
         emit TokensRecovered(token, recipient, amount, block.timestamp);
-    }
-
-    /**
-     * @dev Emergency function to recover ETH sent to this contract
-     */
-    function recoverETH() external onlyOwner {
-        address recipient = owner();
-        uint256 amount = address(this).balance;
-        payable(recipient).transfer(amount);
-        emit ETHRecovered(recipient, amount, block.timestamp);
     }
 
     function setSwapPair(address pair, bool status) external onlyOwner {
