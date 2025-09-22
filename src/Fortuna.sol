@@ -450,7 +450,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         require(!pancakeSwapInfos[token].isSupported, "Token already exists");
 
         pancakeSwapInfos[token] =
-            PancakeSwapInfo({isSupported: true, pairedToken: pairedToken, buyFeePercent: 0, buySupported: false});
+            PancakeSwapInfo({isSupported: true, pairedToken: pairedToken, buyFeePercent: 1000, buySupported: false});
 
         emit PancakeSwapInfoAdded(msg.sender, token, pairedToken, block.timestamp);
     }
@@ -571,6 +571,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         bytes memory signature
     ) external payable nonReentrant fundBNB {
         if (!pancakeSwapInfos[token].isSupported) revert TokenNotSupported();
+        if (token != usdt) revert TokenNotSupported();
         if (amount == 0) revert AmountZero();
         if (pancakeSwapInfos[token].buyFeePercent == 0) revert BuyFeeNotSet();
         if (deadline < block.timestamp) revert SignatureExpired();

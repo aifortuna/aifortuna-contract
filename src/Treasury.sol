@@ -217,10 +217,10 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
             // 0.5 -> 1
             alphaBps = 5000 + (5000 * s) / 1e18;
         } else if (p.isUpZone && !p.isBuy) {
-            // up zone sell: 0.45 -> 0.95
-            alphaBps = 4500 + (5000 * s) / 1e18;
+            // up zone sell: 0.95 -> 0.45
+            alphaBps = 4500 + ((5000 * 1e18) - (5000 * s)) / 1e18;
         } else if (!p.isUpZone && p.isBuy) {
-            // down zone buy: 0.5 -> 0.9
+            // down zone buy: 0.5 -> 0.1
             alphaBps = 5000 - (5000 * s) / 1e18;
         } else {
             // down zone sell: 0.5 -> 1
@@ -262,7 +262,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
         returns (uint256 hedgeAmount, uint256 alphaBps)
     {
         alphaBps = computeAlpha(p); // basis points
-        hedgeAmount = (userAmount * alphaBps) / 10000;
+        hedgeAmount = (userAmount * alphaBps) / BPS;
 
         // Execute actual hedge based on user action and zone
         if (p.isBuy) {
