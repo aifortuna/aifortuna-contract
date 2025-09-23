@@ -441,12 +441,15 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
     }
 
     function setPancakeRouter(address _pancakeRouter) external onlyOwner {
+        require(_pancakeRouter != address(0), "PancakeRouter address cannot be zero");
         address oldRouter = address(pancakeRouter);
         pancakeRouter = IPancakeRouter02(_pancakeRouter);
         emit PancakeRouterUpdated(msg.sender, oldRouter, _pancakeRouter, block.timestamp);
     }
 
     function addPancakeSwapInfos(address token, address pairedToken) external onlyOwner {
+        require(token != address(0), "token address cannot be zero");
+        require(supportedTokens[token].isSupported, "Token not supported");
         require(!pancakeSwapInfos[token].isSupported, "Token already exists");
 
         pancakeSwapInfos[token] =
@@ -456,6 +459,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
     }
 
     function addToken(address token, uint256 minDeposit) external onlyOwner {
+        require(token != address(0), "token address cannot be zero");
         require(!supportedTokens[token].isSupported, "Token already supported");
 
         supportedTokens[token] = TokenInfo({isSupported: true, minDeposit: minDeposit, withdrawable: true});
@@ -468,6 +472,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         require(supportedTokens[token].isSupported, "Token not supported");
 
         supportedTokens[token].isSupported = false;
+        pancakeSwapInfos[token].isSupported = false;
 
         // Remove from tokenList
         for (uint256 i = 0; i < tokenList.length; i++) {
@@ -774,13 +779,8 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         uint256 amountOut = _swapSupportingFeeReturnOut(amountIn, path, deadline);
         IERC20(tokenOut).safeTransfer(to, amountOut);
 
-        if (path[0] == address(usdt) || path[1] == address(usdt)) {
-            // handle USDT <-> FUSD
-            if (path[0] == address(usdt)) {
-                treasuryHedge.execute(amountOut, true);
-            } else {
-                treasuryHedge.execute(amountOut, false);
-            }
+        if (path[1] == address(usdt)) {
+            treasuryHedge.execute(amountOut, false);
         }
 
         //emit Event
@@ -902,18 +902,13 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
             path[1] = tokenB;
 
             _approveExact(tokenA, amount);
-            uint256 sell_amount = (amount * claimFeePercent) / BPS;
+
+            uint256 claim_fee = (amount * claimFeePercent) / BPS;
+            uint256 sell_amount = amount - claim_fee;
             uint256 amountPairedOut = _swapSupportingFeeReturnOut(sell_amount, path, deadline);
 
             emit PairedTokenARewardsClaimed(
-                msg.sender,
-                tokenA,
-                amount - sell_amount,
-                tokenB,
-                amountPairedOut,
-                claimFeePercent,
-                signContext,
-                signature
+                msg.sender, tokenA, sell_amount, tokenB, amountPairedOut, claimFeePercent, signContext, signature
             );
         }
 
@@ -923,17 +918,13 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
             path[0] = tokenB;
             path[1] = tokenA;
             _approveExact(tokenB, amountB);
-            uint256 sell_amount = (amountB * claimFeePercent) / BPS;
+
+            uint256 claim_fee = (amount * claimFeePercent) / BPS;
+            uint256 sell_amount = amount - claim_fee;
+
             uint256 amountPairedOut = _swapSupportingFeeReturnOut(sell_amount, path, deadline);
             emit PairedTokenBRewardsClaimed(
-                msg.sender,
-                tokenB,
-                amountB - sell_amount,
-                tokenA,
-                amountPairedOut,
-                claimFeePercent,
-                signContext,
-                signature
+                msg.sender, tokenB, sell_amount, tokenA, amountPairedOut, claimFeePercent, signContext, signature
             );
         }
     }
