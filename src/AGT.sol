@@ -2,10 +2,10 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract AGT is ERC20, Ownable, ReentrancyGuard {
+contract AGT is ERC20, Ownable2Step, ReentrancyGuard {
     mapping(address => bool) public feeExempt;
     mapping(address => bool) public swapPairs;
     mapping(address => bool) public whitelist;
@@ -25,7 +25,7 @@ contract AGT is ERC20, Ownable, ReentrancyGuard {
     event FeeWalletUpdated(address indexed oldWallet, address indexed newWallet);
     event FeeBpsUpdated(uint256 oldFeeBps, uint256 newFeeBps);
     event GameFeeBpsUpdated(uint256 oldFeeBps, uint256 newFeeBps);
-    event NodeCardFeeReceived(address indexed from, address indexed feeWallet, uint256 amount);
+    event NodeCardFeeReceived(address indexed from, address indexed gameContract, uint256 amount);
     event AGTInitialized(address indexed owner, uint256 initialSupply, uint256 timestamp);
     event WhitelistUpdated(address indexed account, bool status);
     event RoleUpdated(address indexed newAdmin, address indexed oldAdmin);

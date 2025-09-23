@@ -2,11 +2,11 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract FUSD is ERC20, Ownable, ReentrancyGuard {
+contract FUSD is ERC20, Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     address public team;
@@ -42,7 +42,7 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
     event GameFeeBpsUpdated(uint256 oldFeeBps, uint256 newFeeBps);
 
     event FeeReceived(address indexed from, address indexed feeWallet, uint256 amount);
-    event NodeCardFeeReceived(address indexed from, address indexed feeWallet, uint256 amount);
+    event NodeCardFeeReceived(address indexed from, address indexed gameContract, uint256 amount);
     event SwapPairUpdated(address indexed pair, bool status);
     event AgtPairUpdated(address indexed pair);
     event TokensMinted(address indexed to, uint256 amount, address indexed minter, uint256 timestamp);
@@ -297,12 +297,15 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
     function updateGameContract(address _gameContract) external onlyOwner {
         require(_gameContract != address(0), "GameContract cannot be zero address");
         address oldGameContract = gameContract;
-        gameContract = _gameContract;
 
-        // Update whitelist and fee exempt status
+        whitelist[oldGameContract] = false;
+
+        gameContract = _gameContract;
         whitelist[_gameContract] = true;
 
         emit GameContractUpdated(oldGameContract, _gameContract);
+
+        emit WhitelistUpdated(oldGameContract, false);
         emit WhitelistUpdated(_gameContract, true);
     }
 
@@ -348,6 +351,7 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
     }
 
     function setSwapPair(address pair, bool status) external onlyOwner {
+        require(pair != address(0), "zero addr");
         swapPairs[pair] = status;
         whitelist[pair] = status;
         emit SwapPairUpdated(pair, status);
@@ -355,6 +359,8 @@ contract FUSD is ERC20, Ownable, ReentrancyGuard {
     }
 
     function setAgtPair(address _pair) external onlyOwner {
+        require(_pair != address(0), "zero addr");
+
         agtSwapPair = _pair;
         emit AgtPairUpdated(_pair);
     }
