@@ -23,8 +23,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
     uint256 public gamma; // 1.0 default
     uint256 public feeToLPBps; // 10% of hedge amount added as LP (MVP placeholder, not yet auto-added)
 
-    address[] public operators;
-    mapping(address => bool) public operatorsMap;
+    mapping(address => bool) public operators;
     IPancakeRouter02 public pancakeRouter;
     address public lpToken;
 
@@ -115,31 +114,13 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
     }
 
     modifier onlyOperator() {
-        require(operatorsMap[msg.sender], "not operator");
+        require(operators[msg.sender], "not operator");
         _;
     }
 
-    function setOperator(address newOperator) external onlyOwner {
-        if (!operatorsMap[newOperator]) {
-            operators.push(newOperator);
-            operatorsMap[newOperator] = true;
-            emit OperatorAdded(newOperator, msg.sender, block.timestamp);
-        }
-    }
-
     function setOperator(address operator, bool enabled) external onlyOwner {
-        if (enabled) {
-            if (!operatorsMap[operator]) {
-                operators.push(operator);
-                operatorsMap[operator] = true;
-                emit OperatorAdded(operator, msg.sender, block.timestamp);
-            }
-        } else {
-            if (operatorsMap[operator]) {
-                operatorsMap[operator] = false;
-                emit OperatorRemoved(operator, msg.sender, block.timestamp);
-            }
-        }
+        operators[operator] = enabled;
+        emit OperatorAdded(operator, msg.sender, block.timestamp);
     }
 
     function emergencyWithdraw(address token, uint256 amount) external onlyOwner {
@@ -209,7 +190,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
         }
         uint256 s = t.smootherGamma(gamma); // 1e18
         // Four curves mapping:
-        // Up zone: userBuy -> 50%->100%; userSell -> 45%->90%
+        // Up zone: userBuy -> 50%->100%; userSell -> 90%->45%
         // Down zone: userBuy -> 50%->10%; userSell -> 50%->100%
         // Interpolate: alpha = 0.5 +/- 0.4 * s
         // Return in basis points (x 100%)
@@ -286,6 +267,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
 
         if (treasuryFUSD >= hedgeAmount) {
             _swap(true, swapAmount, isUpZone); // FUSD -> USDT
+            treasuryFUSD = fusd.balanceOf(address(this));
         }
 
         if (lpAmount > 0 && treasuryFUSD >= lpAmount) {
@@ -305,6 +287,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
         if (treasuryUSDT >= swapAmount && swapAmount > 0) {
             // Use USDT to acquire FUSD (reduce USDT exposure)
             _swap(false, swapAmount, isUpZone); // USDT -> FUSD
+            treasuryUSDT = usdt.balanceOf(address(this));
         }
 
         if (lpAmount > 0 && treasuryUSDT >= lpAmount) {
