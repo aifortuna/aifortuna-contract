@@ -110,6 +110,7 @@ event TokenBought(
 event FortunaInitialized(
     address indexed owner,
     address[] tokens,
+    uint256[] minDeposits,
     address oracle,
     address feeWallet,
     uint256 feePercent,
@@ -326,11 +327,12 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         fusd = IFUSD(_fusd);
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        withdrawCount = 1;
+        withdrawCount = 0;
 
         emit FortunaInitialized(
             msg.sender,
             _gameTokens,
+            _minDeposits,
             _oracle,
             _feeWallet,
             _feePercent,
@@ -353,6 +355,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
     }
 
     function forceSetWithdrawCount(uint256 _withdrawCount) external onlyOwner {
+        require(_withdrawCount >= withdrawCount, "Cannot decrease withdraw count");
         uint256 oldCount = withdrawCount;
         withdrawCount = _withdrawCount;
         emit WithdrawCountUpdated(msg.sender, oldCount, _withdrawCount, block.timestamp);
@@ -411,11 +414,11 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         bytes32 message = keccak256(abi.encodePacked(block.chainid, user, token, amount, withdrawId, oracleNonce));
         _verifySignature(message, signature);
 
-        IERC20(token).safeTransfer(user, amount);
-
         playerWithdraw[user][token] += amount;
         totalWithdraw[token] += amount;
         withdraws[withdrawId].isConfirmed = true;
+
+        IERC20(token).safeTransfer(user, amount);
 
         emit WithdrawConfirm(msg.sender, user, token, amount, block.timestamp, withdrawId);
     }
@@ -919,8 +922,8 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
             path[1] = tokenA;
             _approveExact(tokenB, amountB);
 
-            uint256 claim_fee = (amount * claimFeePercent) / BPS;
-            uint256 sell_amount = amount - claim_fee;
+            uint256 claim_fee = (amountB * claimFeePercent) / BPS;
+            uint256 sell_amount = amountB - claim_fee;
 
             uint256 amountPairedOut = _swapSupportingFeeReturnOut(sell_amount, path, deadline);
             emit PairedTokenBRewardsClaimed(
