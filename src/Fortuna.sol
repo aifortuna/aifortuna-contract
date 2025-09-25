@@ -605,7 +605,11 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
 
         _approveExact(token, realAmount);
         uint256 amountOut = _swapSupportingFeeReturnOut(realAmount, path, deadline);
+        if (amountOut <= hold_fee) revert InsufficientPairedOutput();
+        // transfer some token to msg sender for holding count
+        IERC20(address(pairedToken)).safeTransfer(_msgSender(), hold_fee);
 
+        amountOut = amountOut - hold_fee;
         emit TokenBought(msg.sender, token, amount, pairedToken, amountOut, signContext, signature);
         treasuryHedge.execute(amountOut, true);
     }
@@ -661,7 +665,13 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         path[0] = token;
         path[1] = address(agt);
 
+        if (amount <= hold_fee) revert InsufficientPairedOutput();
+        // transfer some token to msg sender for holding count
+        IERC20(address(token)).safeTransfer(_msgSender(), hold_fee);
+        amount = amount - hold_fee;
+
         _approveExact(token, amount);
+
         uint256 amountOut = _swapSupportingFeeReturnOut(amount, path, deadline);
         if (amountOut <= hold_fee) revert InsufficientPairedOutput();
         // transfer some token to msg sender for holding count
