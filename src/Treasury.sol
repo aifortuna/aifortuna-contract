@@ -265,7 +265,7 @@ contract Treasury is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, ITreas
         uint256 lpAmount = (hedgeAmount * feeToLPBps) / BPS;
         uint256 swapAmount = hedgeAmount - lpAmount;
 
-        if (treasuryFUSD >= hedgeAmount) {
+        if (treasuryFUSD >= swapAmount) {
             _swap(true, swapAmount, isUpZone); // FUSD -> USDT
             treasuryFUSD = fusd.balanceOf(address(this));
         }

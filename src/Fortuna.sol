@@ -72,6 +72,16 @@ event UserTokenFeeUpdated(address indexed operator, uint256 oldFee, uint256 newF
 
 event PancakeSwapInfoAdded(address indexed user, address indexed token, address pairedToken, uint256 timestamp);
 
+event TeamTokenMinted(
+    address indexed user,
+    address indexed token,
+    uint256 amountIn,
+    address pairedTokenAddress,
+    uint256 amountOut,
+    string signContext,
+    bytes signature
+);
+
 event PairedTokenMinted(
     address indexed user,
     address indexed token,
@@ -593,6 +603,7 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
 
         address pairedToken = pancakeSwapInfos[token].pairedToken;
         if (pairedToken == address(0)) revert PairedTokenNotSet();
+        if (pairedToken != address(fusd)) revert PairedTokenNotSet();
 
         address[] memory path = new address[](2);
         path[0] = token;
@@ -612,6 +623,37 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         amountOut = amountOut - hold_fee;
         emit TokenBought(msg.sender, token, amount, pairedToken, amountOut, signContext, signature);
         treasuryHedge.execute(amountOut, true);
+    }
+
+    function mintTeamToken(uint256 amount, uint256 deadline, string memory signContext, bytes memory signature)
+        external
+        payable
+        nonReentrant
+        fundBNB
+        returns (uint256)
+    {
+        if (amount == 0) revert AmountZero();
+        require(amount <= getBalance(address(fusd)), "Insufficient balance");
+        if (deadline < block.timestamp) revert SignatureExpired();
+        if (usedSignContexts[signContext]) revert SignContextUsed();
+
+        bytes32 message =
+            keccak256(abi.encodePacked(block.chainid, msg.sender, address(fusd), amount, signContext, deadline));
+        _verifySignature(message, signature);
+        usedSignContexts[signContext] = true;
+        address[] memory path = new address[](2);
+        path[0] = address(fusd);
+        path[1] = address(usdt);
+
+        _approveExact(address(fusd), amount);
+        uint256 amountOut = _swapSupportingFeeReturnOut(amount, path, deadline);
+
+        IERC20(address(usdt)).safeTransfer(_msgSender(), amountOut);
+        emit TeamTokenMinted(msg.sender, address(fusd), amount, address(usdt), amountOut, signContext, signature);
+
+        treasuryHedge.execute(amountOut, false);
+
+        return amountOut;
     }
 
     function mintPairedToken(
