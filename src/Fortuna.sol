@@ -748,16 +748,22 @@ contract Fortuna is Ownable2StepUpgradeable, ReentrancyGuardUpgradeable, AccessC
         path[0] = token;
         path[1] = address(agt);
 
-        uint256 sell_amount = (amount * claimFeePercent) / BPS;
         _approveExact(token, amount);
-        uint256 amountPairedOut = _swapSupportingFeeReturnOut(sell_amount, path, deadline);
+        uint256 amountPairedOut = _swapSupportingFeeReturnOut(amount, path, deadline);
+
+        uint256 buybackAmount = (amountPairedOut * feePercent) / BPS;
+        _approveExact(address(agt), buybackAmount);
+
+        path[0] = address(agt);
+        path[1] = token;
+        uint256 amount = _swapSupportingFeeReturnOut(buybackAmount, path, deadline);
 
         emit PairedTokenRewardsClaimed(
             msg.sender,
             token,
-            amount - sell_amount,
+            amount,
             address(agt),
-            amountPairedOut,
+            amountPairedOut - buybackAmount,
             claimFeePercent,
             signContext,
             signature
